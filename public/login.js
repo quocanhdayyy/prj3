@@ -233,7 +233,7 @@
     '/api/audit-logs', '/api/players', '/api/clubs', '/api/contracts',
     '/api/player-stats', '/api/injury-history', '/api/club-requirements', '/api/users',
     '/api/market-value-history', '/api/matching-inputs', '/api/player-data-verifications',
-    '/api/matching/template',
+    '/api/matching/template', '/api/matching/v3/template',
   ]);
   const runRisk = async mode => {
     if (busy) return;
