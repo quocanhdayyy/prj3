@@ -1,21 +1,12 @@
-node_modules
-# Keep environment variables out of version control
+node_modules/
+dist/
 .env
-
-/src/generated/prisma
-
-# Downloaded third-party snapshots and import checkpoints are local data.
-/data/transfermarkt/
-/data/supplemental-stats/
-/data/stats-enrichment/
-/data/scope-top5/
-/data/maintenance/
-/data/v3-metrics/
-
-# Build output and local tooling artifacts.
-/dist/
+.env.*
+!.env.example
+backend/src/generated/prisma/
+backend/data/
 __pycache__/
 *.py[cod]
+*.log
 *.tsbuildinfo
 .DS_Store
-*.log
