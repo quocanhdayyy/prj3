@@ -9,6 +9,13 @@
   const matchingFields = ['matching-player-id', 'matching-requirement-id', 'matching-season', 'matching-form-role', 'matching-config-id', 'matching-valuation-source', 'matching-save', 'matching-evaluate-button'];
   const squadFields = ['squad-player-id', 'squad-season', 'squad-position', 'squad-weight-position', 'squad-weight-age', 'squad-weight-form', 'squad-evaluate-button'];
   const riskFields = ['risk-weight-injury', 'risk-weight-resale', 'risk-player-id', 'risk-source', 'risk-evaluate-button', 'risk-age', 'risk-days', 'risk-ongoing', 'risk-prior-value', 'risk-current-value', 'risk-simulate-button', 'risk-demo-player', 'risk-demo-button'];
+  const strategyLabels = {
+    MONEYBALL: { name: 'Tiết kiệm / Moneyball', description: 'Ưu tiên chi phí chuyển nhượng và mức lương phù hợp.' },
+    BALANCED: { name: 'Cân bằng', description: 'Ưu tiên chuyên môn, kết hợp khả năng tài chính và tương lai.' },
+    LONG_TERM: { name: 'Đầu tư dài hạn', description: 'Ưu tiên sức khỏe và khả năng bán lại trong tương lai.' },
+    IMMEDIATE_ROLE: { name: 'Cần ngay vai trò', description: 'Ưu tiên đáp ứng ngay vai trò chuyên môn đội bóng cần.' },
+  };
+  let v3Strategies = null;
   let session = null;
   let busy = false;
   try { session = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); } catch { session = null; }
@@ -24,11 +31,13 @@
   const setBusy = value => {
     busy = value;
     for (const id of ['login-button', 'refresh-button', 'logout-button', 'api-test-button', 'api-endpoint', 'api-record-id',
-      ...Object.values(financialFields), ...matchingFields, ...squadFields, ...riskFields, 'financial-player-id', 'financial-requirement-id', 'financial-preview-button', 'financial-evaluate-button']) byId(id).disabled = value;
+      ...Object.values(financialFields), ...matchingFields, ...squadFields, ...riskFields, 'v3-reload-button', 'financial-player-id', 'financial-requirement-id', 'financial-preview-button', 'financial-evaluate-button']) byId(id).disabled = value;
+    byId('v3-strategy').disabled = value || !v3Strategies;
     byId('login-button').textContent = value ? 'Đang xử lý…' : 'Đăng nhập →';
   };
   const showLogin = () => {
     saveSession(null);
+    clearV3Strategies();
     byId('login-panel').hidden = false;
     byId('account-panel').hidden = true;
     byId('password').value = '';
@@ -66,6 +75,58 @@
     byId('account-expiry').textContent = new Date(session.expiresAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
     byId('password').value = '';
   };
+  const clearV3Strategies = () => {
+    v3Strategies = null;
+    byId('v3-strategy').replaceChildren(); byId('v3-strategy').value = ''; byId('v3-strategy').disabled = true;
+    byId('v3-weights').hidden = true; byId('v3-strategy-description').textContent = '';
+    byId('v3-status').textContent = '';
+    for (const key of ['financial', 'squad', 'risk']) byId('v3-weight-' + key).textContent = '';
+  };
+  const renderV3Strategy = () => {
+    const key = byId('v3-strategy').value;
+    const weights = v3Strategies && Object.hasOwn(v3Strategies, key) && Object.hasOwn(strategyLabels, key) ? v3Strategies[key] : null;
+    byId('v3-weights').hidden = !weights;
+    byId('v3-strategy-description').textContent = weights ? strategyLabels[key].description : '';
+    for (const field of ['financial', 'squad', 'risk']) byId('v3-weight-' + field).textContent = weights ? (weights[field] * 100).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + '%' : '';
+    if (weights) {
+      byId('v3-status').textContent = strategyLabels[key].name + ' · Tổng trọng số 100%. Chỉ xem cấu hình, chưa tính hoặc lưu điểm.';
+      byId('v3-status').className = 'message success';
+    }
+  };
+  const loadV3Strategies = async () => {
+    const accessToken = session?.accessToken;
+    if (!accessToken) return;
+    const previous = byId('v3-strategy').value;
+    clearV3Strategies(); byId('v3-status').textContent = 'Đang tải chiến lược V3…'; byId('v3-status').className = 'message';
+    try {
+      const response = await fetch('/api/matching/v3/template', { headers: { Authorization: 'Bearer ' + accessToken }, cache: 'no-store' });
+      const payload = await response.json();
+      if (session?.accessToken !== accessToken) return;
+      if (response.status === 401) { showLogin(); message('Phiên đã hết hạn. Vui lòng đăng nhập lại.', true); return; }
+      if (!response.ok) throw new Error(payload.message || 'Không tải được cấu hình V3.');
+      const strategies = payload.data?.strategies;
+      if (!strategies || Object.keys(strategies).length !== Object.keys(strategyLabels).length || Object.keys(strategyLabels).some(key => {
+        const w = strategies[key];
+        return !w || ['financial', 'squad', 'risk'].some(field => typeof w[field] !== 'number' || !Number.isFinite(w[field]) || w[field] < 0 || w[field] > 1)
+          || Math.abs(w.financial + w.squad + w.risk - 1) > 1e-8;
+      })) throw new Error('Cấu hình chiến lược V3 chưa hợp lệ.');
+      v3Strategies = strategies;
+      for (const [key, label] of Object.entries(strategyLabels)) {
+        const option = document.createElement('option'); option.value = key; option.textContent = label.name;
+        byId('v3-strategy').append(option);
+      }
+      byId('v3-strategy').value = Object.hasOwn(strategies, previous) ? previous : 'BALANCED';
+      renderV3Strategy();
+    } catch (error) {
+      byId('v3-status').textContent = error.message || 'Không tải được cấu hình V3. Bấm tải lại để thử lại.';
+      byId('v3-status').className = 'message error';
+    }
+  };
+  byId('v3-strategy').addEventListener('change', renderV3Strategy);
+  byId('v3-reload-button').addEventListener('click', async () => {
+    if (busy || !session) return;
+    setBusy(true); try { await loadV3Strategies(); } finally { setBusy(false); }
+  });
   const request = async (path, options = {}, authenticated = false) => {
     const response = await fetch('/api/auth' + path, {
       ...options,
@@ -86,7 +147,8 @@
     try {
       const payload = await request('/me', {}, true);
       showAccount(payload.data);
-      message('Phiên đăng nhập đang hoạt động.');
+      await loadV3Strategies();
+      if (session) message('Phiên đăng nhập đang hoạt động.');
     } catch (error) {
       if (error.status === 401) showLogin();
       message(error.message || 'Không kết nối được backend.', true);
@@ -103,7 +165,8 @@
       });
       saveSession({ accessToken: payload.data.accessToken, expiresAt: payload.data.expiresAt });
       showAccount(payload.data.user);
-      message('Đăng nhập thành công.');
+      await loadV3Strategies();
+      if (session) message('Đăng nhập thành công.');
     } catch (error) { message(error.message || 'Không kết nối được backend.', true); }
     finally { setBusy(false); }
   });

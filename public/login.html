@@ -46,6 +46,23 @@
             <div><dt>Phiên hết hạn</dt><dd id="account-expiry"></dd></div>
           </dl>
           <button id="refresh-button" class="secondary" type="button">Kiểm tra phiên đăng nhập</button>
+          <section class="v3-strategy-tester" aria-labelledby="v3-heading">
+            <div class="v3-heading"><h3 id="v3-heading">Matching V3</h3><span class="v3-badge">Giai đoạn 1</span></div>
+            <p class="subtitle">Chọn chiến lược chuyển nhượng để xem mức ưu tiên giữa tài chính, chuyên môn và tương lai.</p>
+            <label for="v3-strategy">Chiến lược chuyển nhượng</label>
+            <select id="v3-strategy" aria-describedby="v3-strategy-description v3-notice" disabled>
+              <option value="">Đang tải chiến lược…</option>
+            </select>
+            <p id="v3-strategy-description" class="v3-description"></p>
+            <dl id="v3-weights" class="v3-weights" hidden>
+              <div><dt>F · Tài chính</dt><dd id="v3-weight-financial"></dd></div>
+              <div><dt>S · Chuyên môn</dt><dd id="v3-weight-squad"></dd></div>
+              <div><dt>R · Rủi ro &amp; tương lai</dt><dd id="v3-weight-risk"></dd></div>
+            </dl>
+            <p id="v3-notice" class="v3-notice">V3 chưa bật tính điểm. Lựa chọn này chỉ để xem trọng số, chưa lưu vào database hoặc áp dụng cho các form tính điểm phiên bản cũ bên dưới.</p>
+            <button id="v3-reload-button" class="secondary" type="button">Tải lại cấu hình V3</button>
+            <p id="v3-status" class="message" role="status" aria-live="polite"></p>
+          </section>
           <section class="api-tester" aria-labelledby="api-heading">
             <h3 id="api-heading">Thử API backend</h3>
             <p class="subtitle">Chọn API để đọc dữ liệu bằng phiên đăng nhập hiện tại.</p>
