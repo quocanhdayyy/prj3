@@ -60,3 +60,4 @@ Build tự xóa bản `dist` cũ trước khi sinh lại. Có thể xóa riêng 
 Trong `src/`, route khai báo đường dẫn API, controller kiểm tra request/quyền truy cập, service xử lý nghiệp vụ. Các phép tính và dịch vụ liên quan Matching đã gom vào `services/matching/`; các service quản lý thực thể còn lại giữ cấu trúc hiện có. Script lấy/nhập dữ liệu nằm trong `scripts/`, không trộn vào luồng request API. Tên lệnh npm được giữ để các hướng dẫn chạy hiện có tiếp tục dùng được.
 
 Các API thử riêng F/S/R dùng chung `src/controllers/preview.controller.ts` và được khai báo trong `src/routes/matching.routes.ts`. Tài liệu tra cứu chính đã gom vào ba file: API, dữ liệu và hướng dẫn test, mỗi file có mục lục riêng.
+# football-ts
