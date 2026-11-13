@@ -4,6 +4,7 @@ Chọn mục để đọc đúng phần cần dùng:
 
 - [Thử F S R](#scoring)
 - [Các bộ DEMO](#demo)
+- [Xem bốn chiến lược V3](#v3-strategies)
 
 ## Scoring
 
@@ -369,4 +370,19 @@ Nguồn mẫu là `src/config/risk-injury-demo.ts`, nằm trong mã nguồn đ�
 - Không lưu điểm R demo vào MatchResult hoặc thay cấu hình active. Thiếu dữ liệu bán lại vẫn giữ null, không tự tạo giá giả.
 
 `npm run test:risk-preview` đã thử đủ 10 mẫu trên database local, kiểm tra nhãn demo/nguồn giá, đối chiếu với API thật và so sánh toàn bộ lịch sử chấn thương/xác minh trước và sau để xác nhận không bị ghi đè.
+
+<a id="v3-strategies"></a>
+
+## Xem bốn chiến lược V3 trên trang test
+
+Mở `/login`, đăng nhập rồi xem mục **Matching V3 — Giai đoạn 1** ngay dưới thông tin tài khoản. Chọn **Chiến lược chuyển nhượng** để xem trọng số lấy từ backend:
+
+| Chiến lược | F | S | R |
+| --- | ---: | ---: | ---: |
+| Tiết kiệm / Moneyball | 50% | 30% | 20% |
+| Cân bằng | 30% | 50% | 20% |
+| Đầu tư dài hạn | 20% | 30% | 50% |
+| Cần ngay vai trò | 20% | 70% | 10% |
+
+Đây là phần xem cấu hình của giai đoạn 1, chưa tính/lưu điểm V3. Các form F/S/R bên dưới vẫn dùng phiên bản cũ. **Tải lại cấu hình V3** đọc lại API bằng phiên đăng nhập hiện tại; nếu phiên hết hạn, trang yêu cầu đăng nhập lại.
 

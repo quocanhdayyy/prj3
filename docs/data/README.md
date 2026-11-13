@@ -446,6 +446,8 @@ Một số lựa chọn kỹ thuật còn mở trong báo cáo được khai bá
 
 Sau khi đăng nhập, `GET /api/matching/v3/template` trả registry, cấu hình mẫu, hợp đồng chỉ số và `implementationStage: 1`, `scoringAvailable: false`. **Chưa có** `/v3/evaluate`, `/v3/rank`, `/v3/search` hoặc `/v3/squad/preview`.
 
+Trang `/login` có mục **Matching V3 — Giai đoạn 1** ngay dưới nút kiểm tra phiên. Sau khi đăng nhập, trang tự tải bốn chiến lược từ API; chọn chiến lược sẽ hiển thị trọng số F/S/R tương ứng. Có nút tải lại cấu hình và lựa chọn đọc JSON trong mục thử API. Lựa chọn này chỉ để xem cấu hình, chưa ghi vào database hoặc áp dụng cho các form tính điểm cũ. Làm mới trang nếu đang mở bản UI trước đó.
+
 Admin dùng API thống kê sẵn có để nhập phút theo vị trí:
 
 ```http
