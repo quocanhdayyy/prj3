@@ -16,8 +16,10 @@ const { createUser } = require('../src/services/user.service.ts');
   let requestCount = 0;
   const mount = () => {
     const nodes = new Map();
+    const element = () => ({ children: [], value: '', textContent: '', append(...items) { this.children.push(...items); }, replaceChildren(...items) { this.children = items; } });
     const node = id => {
       if (!nodes.has(id)) nodes.set(id, {
+        ...element(),
         value: id === 'api-endpoint' ? '/api/transfers' : '',
         type: id === 'password' ? 'password' : '', hidden: id === 'account-panel' || id === 'api-result',
         disabled: false, textContent: '', className: '', events: {},
@@ -27,7 +29,7 @@ const { createUser } = require('../src/services/user.service.ts');
       return nodes.get(id);
     };
     vm.runInNewContext(source, {
-      document: { getElementById: node },
+      document: { getElementById: node, createElement: element },
       sessionStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
       fetch: (url, options) => { requestCount++; return fetch(base + url, options); },
       Date, JSON, Error, Set,
@@ -90,7 +92,7 @@ const { createUser } = require('../src/services/user.service.ts');
     node('api-record-id').value = ''; node('api-endpoint').value = '/api/auth/login';
     await node('api-test-button').events.click(); assert.equal(requestCount, before);
     node = mount();
-    for (let i = 0; i < 100 && node('account-panel').hidden; i++) await new Promise(resolve => setTimeout(resolve, 10));
+    for (let i = 0; i < 200 && (node('account-panel').hidden || node('login-button').disabled); i++) await new Promise(resolve => setTimeout(resolve, 10));
     assert.equal(node('account-panel').hidden, false); // Restores the existing tab session, no new login.
     await node('logout-button').events.click();
     assert.equal(node('api-result').hidden, true); assert.equal(storage.size, 0);
