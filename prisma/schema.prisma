@@ -1,0 +1,450 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SCOUT
+  ADMIN
+}
+
+model User {
+  matchingInputs            MatchingInput[]
+  injuryVerifications       PlayerDataVerification[] @relation("InjuryDataVerifier")
+  registrationVerifications PlayerDataVerification[] @relation("RegistrationDataVerifier")
+  notifications             Notification[]
+  matchResults              MatchResult[]
+  auditLogs                 AuditLog[]
+  shortlistItems            ShortlistItem[]
+  sessions                  AuthSession[]
+  requirements              ClubRequirement[]
+  shortlists                Shortlist[]
+  id                        Int                      @id @default(autoincrement())
+  username                  String                   @unique @db.VarChar(50)
+  email                     String                   @unique @db.VarChar(100)
+  passwordHash              String                   @map("password_hash") @db.VarChar(255)
+  role                      UserRole                 @default(SCOUT)
+  createdAt                 DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("users")
+}
+
+model AuthSession {
+  tokenHash      String   @id @map("token_hash") @db.VarChar(64)
+  credentialHash String   @map("credential_hash") @db.VarChar(64)
+  userId         Int      @map("user_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+model Club {
+  transfermarktId   Int?              @unique @map("transfermarkt_id")
+  outgoingTransfers Transfer[]        @relation("TransferFromClub")
+  incomingTransfers Transfer[]        @relation("TransferToClub")
+  requirements      ClubRequirement[]
+  contracts         Contract[]
+  id                Int               @id @default(autoincrement())
+  name              String            @db.VarChar(100)
+  country           String            @db.VarChar(100)
+  league            String            @db.VarChar(100)
+  foundedYear       Int?              @map("founded_year")
+
+  @@map("clubs")
+}
+
+model Player {
+  transfermarktId    Int?                       @unique @map("transfermarkt_id")
+  secondaryPositions String[]                   @default([]) @map("secondary_positions") @db.VarChar(50)
+  marketValueHistory PlayerMarketValueHistory[]
+  matchingInputs     MatchingInput[]
+  dataVerification   PlayerDataVerification?
+  transfers          Transfer[]
+  notifications      Notification[]
+  matchResults       MatchResult[]
+  shortlists         ShortlistItem[]
+  injuries           InjuryHistory[]
+  stats              PlayerStats[]
+  contracts          Contract[]
+  id                 Int                        @id @default(autoincrement())
+  name               String                     @db.VarChar(100)
+  dateOfBirth        DateTime                   @map("date_of_birth") @db.Date
+  nationality        String                     @db.VarChar(100)
+  position           String                     @db.VarChar(50)
+  marketValue        Decimal?                   @map("market_value") @db.Decimal(15, 2)
+  height             Int?
+  preferredFoot      String?                    @map("preferred_foot") @db.VarChar(10)
+
+  @@map("players")
+}
+
+model ClubRequirement {
+  matchingInputs MatchingInput[]
+  id             Int             @id @default(autoincrement())
+  clubId         Int             @map("club_id")
+  userId         Int             @map("user_id")
+  minAge         Int             @map("min_age")
+  maxAge         Int             @map("max_age")
+  salaryLimit    Decimal         @map("salary_limit") @db.Decimal(15, 2)
+  position       String          @db.VarChar(50)
+  priority       Int
+  budget         Decimal         @db.Decimal(15, 2)
+  club           Club            @relation(fields: [clubId], references: [id], onDelete: Restrict)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  matchResults   MatchResult[]
+  shortlists     ShortlistItem[]
+
+  @@unique([id, userId])
+  @@index([clubId])
+  @@index([userId])
+  @@map("club_requirements")
+}
+
+// Monetary values in these matching models are EUR; salaries are EUR/year.
+model PlayerMarketValueHistory {
+  id          Int             @id @default(autoincrement())
+  playerId    Int             @map("player_id")
+  valuedAt    DateTime        @map("valued_at") @db.Date
+  marketValue Decimal         @map("market_value") @db.Decimal(15, 2)
+  source      String          @db.VarChar(255)
+  reliability DataReliability @default(UNKNOWN)
+  recordedAt  DateTime        @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  player      Player          @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@unique([playerId, valuedAt, source])
+  @@index([playerId, valuedAt])
+  @@map("player_market_value_histories")
+}
+
+// One editable input per candidate and requirement; results retain their own snapshot.
+model MatchingInput {
+  id                    Int             @id @default(autoincrement())
+  userId                Int             @map("user_id")
+  requirementId         Int             @map("requirement_id")
+  playerId              Int             @map("player_id")
+  estimatedFee          Decimal?        @map("estimated_fee") @db.Decimal(15, 2)
+  expectedSalaryPerYear Decimal?        @map("expected_salary_per_year") @db.Decimal(15, 2)
+  feeSource             String?         @map("fee_source") @db.VarChar(255)
+  salarySource          String?         @map("salary_source") @db.VarChar(255)
+  createdAt             DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  requirement           ClubRequirement @relation(fields: [requirementId, userId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict)
+  player                Player          @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@unique([requirementId, playerId])
+  @@index([requirementId, userId])
+  @@index([playerId])
+  @@map("matching_inputs")
+}
+
+enum PlayerRegistrationStatus {
+  UNKNOWN
+  CONTRACTED
+  FREE_AGENT
+}
+
+// Verified coverage, rather than absence of rows, establishes a complete injury history.
+model PlayerDataVerification {
+  playerId                 Int                      @id @map("player_id")
+  injuryCoveredFrom        DateTime?                @map("injury_covered_from") @db.Date
+  injuryCoveredThrough     DateTime?                @map("injury_covered_through") @db.Date
+  injuryVerifiedAt         DateTime?                @map("injury_verified_at") @db.Timestamptz(3)
+  injuryVerifiedById       Int?                     @map("injury_verified_by_id")
+  injurySource             String?                  @map("injury_source") @db.VarChar(255)
+  registrationStatus       PlayerRegistrationStatus @default(UNKNOWN) @map("registration_status")
+  registrationAsOf         DateTime?                @map("registration_as_of") @db.Date
+  registrationVerifiedAt   DateTime?                @map("registration_verified_at") @db.Timestamptz(3)
+  registrationVerifiedById Int?                     @map("registration_verified_by_id")
+  registrationSource       String?                  @map("registration_source") @db.VarChar(255)
+  player                   Player                   @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  injuryVerifiedBy         User?                    @relation("InjuryDataVerifier", fields: [injuryVerifiedById], references: [id], onDelete: Restrict)
+  registrationVerifiedBy   User?                    @relation("RegistrationDataVerifier", fields: [registrationVerifiedById], references: [id], onDelete: Restrict)
+
+  @@index([injuryVerifiedById])
+  @@index([registrationVerifiedById])
+  @@map("player_data_verifications")
+}
+
+model ShortlistItem {
+  shortlistId   Int              @map("shortlist_id")
+  priority      Int              @default(1)
+  shortlist     Shortlist        @relation(fields: [shortlistId, userId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict)
+  id            Int              @id @default(autoincrement())
+  userId        Int              @map("user_id")
+  playerId      Int              @map("player_id")
+  requirementId Int?             @map("requirement_id")
+  note          String?          @db.VarChar(255)
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  player        Player           @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  requirement   ClubRequirement? @relation(fields: [requirementId, userId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([shortlistId, playerId, requirementId])
+  @@index([shortlistId, userId])
+  @@index([playerId])
+  @@index([requirementId, userId])
+  @@map("shortlists")
+}
+
+model InjuryHistory {
+  id         Int       @id @default(autoincrement())
+  playerId   Int       @map("player_id")
+  injuryType String    @map("injury_type") @db.VarChar(100)
+  bodyRegion String?   @map("body_region") @db.VarChar(50)
+  startDate  DateTime  @map("start_date") @db.Date
+  endDate    DateTime? @map("end_date") @db.Date
+  player     Player    @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@index([playerId])
+  @@map("injury_histories")
+}
+
+enum ContractStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+model Contract {
+  id            Int            @id @default(autoincrement())
+  playerId      Int            @map("player_id")
+  clubId        Int            @map("club_id")
+  startDate     DateTime       @map("start_date") @db.Date
+  endDate       DateTime       @map("end_date") @db.Date
+  salaryPerYear Decimal        @map("salary_per_year") @db.Decimal(15, 2)
+  releaseClause Decimal?       @map("release_clause") @db.Decimal(15, 2)
+  status        ContractStatus
+  player        Player         @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  club          Club           @relation(fields: [clubId], references: [id], onDelete: Restrict)
+
+  @@index([playerId])
+  @@index([clubId])
+  @@map("contracts")
+}
+
+model PlayerStats {
+  estimate        PlayerStatsEstimate?
+  metrics         PlayerStatsMetrics?
+  roleSnapshots   RoleScoreSnapshot[]
+  id              Int    @id @default(autoincrement())
+  playerId        Int    @map("player_id")
+  season          String @db.VarChar(20)
+  appearances     Int
+  minutesPlayed   Int    @map("minutes_played")
+  positionMinutes Json?  @map("position_minutes")
+  positionMinutesSource String? @map("position_minutes_source") @db.VarChar(255)
+  goals           Int
+  assists         Int
+  yellowCards     Int    @map("yellow_cards")
+  redCards        Int    @map("red_cards")
+  tacklesWon      Int?   @map("tackles_won")
+  interceptions   Int?
+  keyPasses       Int?   @map("key_passes")
+  passesCompleted Int?   @map("passes_completed")
+  passesAttempted Int?   @map("passes_attempted")
+  player          Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@unique([playerId, season])
+  @@map("player_stats")
+}
+
+// Estimates remain separate from observed statistics and are not injury verification.
+model PlayerStatsEstimate {
+  statsId     Int         @id @map("stats_id")
+  method      String      @db.VarChar(100)
+  values      Json
+  evidence    Json
+  generatedAt DateTime    @default(now()) @map("generated_at") @db.Timestamptz(3)
+  stats       PlayerStats @relation(fields: [statsId], references: [id], onDelete: Cascade)
+
+  @@map("player_stats_estimates")
+}
+
+// Versioned V3 inputs. Every metric carries its unit, basis and source;
+// estimates never replace observed PlayerStats columns or imply verification.
+model PlayerStatsMetrics {
+  statsId      Int         @id @map("stats_id")
+  method       String      @db.VarChar(100)
+  inputHash    String      @map("input_hash") @db.VarChar(64)
+  sourceHash   String      @map("source_hash") @db.VarChar(64)
+  values       Json
+  evidence     Json
+  generatedAt  DateTime    @default(now()) @map("generated_at") @db.Timestamptz(3)
+  stats        PlayerStats @relation(fields: [statsId], references: [id], onDelete: Cascade)
+
+  @@map("player_stats_metrics")
+}
+
+// Rebuildable cache; MatchResult keeps the immutable explanation used at evaluation.
+model RoleScoreSnapshot {
+  statsId      Int      @map("stats_id")
+  configHash   String   @map("config_hash") @db.VarChar(64)
+  datasetHash  String   @map("dataset_hash") @db.VarChar(64)
+  matrixVersion String  @map("matrix_version") @db.VarChar(100)
+  values       Json
+  generatedAt  DateTime @default(now()) @map("generated_at") @db.Timestamptz(3)
+  stats        PlayerStats @relation(fields: [statsId], references: [id], onDelete: Cascade)
+
+  @@id([statsId, configHash])
+  @@index([datasetHash])
+  @@map("role_score_snapshots")
+}
+
+model Shortlist {
+  id             Int             @id @default(autoincrement())
+  userId         Int             @map("user_id")
+  name           String          @db.VarChar(100)
+  defaultOwnerId Int?            @unique @map("default_owner_id")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items          ShortlistItem[]
+
+  @@unique([id, userId])
+  @@index([userId])
+  @@map("shortlist_lists")
+}
+
+enum TransferType {
+  PERMANENT
+  LOAN
+  FREE
+}
+
+enum DataReliability {
+  UNKNOWN
+  RUMOR
+  REPUTABLE_PRESS
+  OFFICIAL
+  FINANCIAL_REPORT
+}
+
+model Transfer {
+  id           Int             @id @default(autoincrement())
+  playerId     Int             @map("player_id")
+  fromClubId   Int?            @map("from_club_id")
+  toClubId     Int             @map("to_club_id")
+  transferDate DateTime        @map("transfer_date") @db.Date
+  type         TransferType
+  fee          Decimal?        @db.Decimal(15, 2)
+  reliability  DataReliability @default(UNKNOWN)
+  source       String?
+  player       Player          @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  fromClub     Club?           @relation("TransferFromClub", fields: [fromClubId], references: [id], onDelete: Restrict)
+  toClub       Club            @relation("TransferToClub", fields: [toClubId], references: [id], onDelete: Restrict)
+
+  @@index([playerId, transferDate])
+  @@index([fromClubId])
+  @@index([toClubId])
+  @@map("transfers")
+}
+
+enum NotificationType {
+  CONTRACT_RENEWED
+  CONTRACT_TERMINATED
+  CONTRACT_EXPIRING
+  MARKET_VALUE_CHANGED
+  RELEASE_CLAUSE_CHANGED
+  INJURY_RECORDED
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  playerId  Int?             @map("player_id")
+  type      NotificationType
+  title     String           @db.VarChar(255)
+  content   String
+  eventKey  String           @map("event_key") @db.VarChar(255)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(3)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  player    Player?          @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, eventKey])
+  @@index([userId, readAt, createdAt])
+  @@index([playerId])
+  @@map("notifications")
+}
+
+model ScoringConfig {
+  id              Int           @id @default(autoincrement())
+  name            String        @db.VarChar(100)
+  version         Int
+  financialWeight Decimal       @map("financial_weight") @db.Decimal(5, 4)
+  squadWeight     Decimal       @map("squad_weight") @db.Decimal(5, 4)
+  riskWeight      Decimal       @map("risk_weight") @db.Decimal(5, 4)
+  criteriaWeights Json          @map("criteria_weights")
+  parameters      Json
+  isActive        Boolean       @default(false) @map("is_active")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  results         MatchResult[]
+
+  @@unique([name, version])
+  @@map("scoring_configs")
+}
+
+model MatchResult {
+  id             Int             @id @default(autoincrement())
+  userId         Int             @map("user_id")
+  playerId       Int             @map("player_id")
+  requirementId  Int             @map("requirement_id")
+  configId       Int             @map("config_id")
+  totalScore     Decimal         @map("total_score") @db.Decimal(5, 2)
+  financialScore Decimal?        @map("financial_score") @db.Decimal(5, 2)
+  squadScore     Decimal?        @map("squad_score") @db.Decimal(5, 2)
+  riskScore      Decimal?        @map("risk_score") @db.Decimal(5, 2)
+  criteriaScores Json            @map("criteria_scores")
+  prosCons       Json            @map("pros_cons")
+  inputSnapshot  Json            @map("input_snapshot")
+  evaluatedAt    DateTime        @default(now()) @map("evaluated_at") @db.Timestamptz(3)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  player         Player          @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  requirement    ClubRequirement @relation(fields: [requirementId, userId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict)
+  config         ScoringConfig   @relation(fields: [configId], references: [id], onDelete: Restrict)
+
+  @@index([userId, evaluatedAt])
+  @@index([playerId])
+  @@index([requirementId, userId])
+  @@index([configId])
+  @@map("match_results")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  SOFT_DELETE
+  DELETE
+  VERIFY
+}
+
+model AuditLog {
+  id         Int         @id @default(autoincrement())
+  entityType String      @map("entity_type") @db.VarChar(100)
+  entityId   Int         @map("entity_id")
+  action     AuditAction
+  oldValue   Json?       @map("old_value")
+  newValue   Json?       @map("new_value")
+  actorId    Int         @map("actor_id")
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  ipAddress  String?     @map("ip_address") @db.VarChar(45)
+  actor      User        @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập · Football Transfer System</title>
+  <link rel="stylesheet" href="/login-assets/login.css">
+  <script src="/login-assets/login.js" defer></script>
+</head>
+<body>
+  <main class="layout">
+    <section class="intro" aria-label="Football Transfer System">
+      <a class="brand" href="/login"><span class="brand-mark" aria-hidden="true">FT</span> FOOTBALL TRANSFER SYSTEM</a>
+      <div class="intro-copy">
+        <p class="eyebrow">TỪ DỮ LIỆU ĐẾN QUYẾT ĐỊNH</p>
+        <h1>Tìm cầu thủ.<br>Xây đội hình.</h1>
+        <p>Không gian làm việc cho tuyển trạch viên và người quản lý dữ liệu bóng đá.</p>
+      </div>
+      <div class="pitch" aria-hidden="true"><div class="center-circle"></div><div class="box left"></div><div class="box right"></div><span class="dot one"></span><span class="dot two"></span><span class="dot three"></span></div>
+      <p class="intro-footer">Cầu thủ · Hợp đồng · Thống kê · Shortlist</p>
+    </section>
+    <section class="workspace">
+      <div class="card">
+        <div id="login-panel">
+          <p class="eyebrow">CHÀO MỪNG TRỞ LẠI</p>
+          <h2>Đăng nhập</h2>
+          <p class="subtitle">Sử dụng tài khoản của bạn để tiếp tục.</p>
+          <form id="login-form">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="username" placeholder="ban@example.com" maxlength="100" required>
+            <label for="password">Mật khẩu</label>
+            <div class="password-field">
+              <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+              <button id="toggle-password" class="reveal" type="button" aria-label="Hiện mật khẩu" aria-pressed="false">Hiện</button>
+            </div>
+            <button id="login-button" class="primary" type="submit">Đăng nhập <span aria-hidden="true">→</span></button>
+          </form>
+        </div>
+        <div id="account-panel" hidden>
+          <p class="eyebrow">ĐÃ ĐĂNG NHẬP</p>
+          <h2>Xin chào, <span id="account-name"></span></h2>
+          <p class="subtitle">Thông tin tài khoản của bạn.</p>
+          <dl class="account-details">
+            <div><dt>Email</dt><dd id="account-email"></dd></div>
+            <div><dt>Vai trò</dt><dd id="account-role"></dd></div>
+            <div><dt>Phiên hết hạn</dt><dd id="account-expiry"></dd></div>
+          </dl>
+          <button id="refresh-button" class="secondary" type="button">Kiểm tra phiên đăng nhập</button>
+          <section class="api-tester" aria-labelledby="api-heading">
+            <h3 id="api-heading">Thử API backend</h3>
+            <p class="subtitle">Chọn API để đọc dữ liệu bằng phiên đăng nhập hiện tại.</p>
+            <label for="api-endpoint">API cần kiểm tra</label>
+            <select id="api-endpoint">
+              <option value="/api/transfers">Lịch sử chuyển nhượng</option>
+              <option value="/api/market-value-history">Lịch sử giá trị thị trường</option>
+              <option value="/api/matching-inputs">Phí và lương dự kiến</option>
+              <option value="/api/player-data-verifications">Xác minh hồ sơ (ID cầu thủ)</option>
+              <option value="/api/shortlist-lists">Danh sách Shortlist</option>
+              <option value="/api/shortlist-items">Các mục cầu thủ trong Shortlist</option>
+              <option value="/api/notifications">Thông báo</option>
+              <option value="/api/scoring-configs">Cấu hình điểm (Admin)</option>
+              <option value="/api/match-results">Lịch sử kết quả Matching</option>
+              <option value="/api/matching/template">Mẫu cấu hình Matching (để trống ID)</option>
+              <option value="/api/audit-logs">Nhật ký thay đổi (Admin)</option>
+              <option value="/api/players">Cầu thủ</option>
+              <option value="/api/clubs">CLB</option>
+              <option value="/api/contracts">Hợp đồng</option>
+              <option value="/api/player-stats">Thống kê cầu thủ</option>
+              <option value="/api/injury-history">Lịch sử chấn thương</option>
+              <option value="/api/club-requirements">Nhu cầu CLB</option>
+              <option value="/api/users">Tài khoản (Admin)</option>
+            </select>
+            <label for="api-record-id">ID bản ghi (không bắt buộc)</label>
+            <input id="api-record-id" type="number" min="1" max="2147483647" step="1" placeholder="Để trống để xem danh sách">
+            <button id="api-test-button" class="secondary" type="button">Xem dữ liệu</button>
+            <p id="api-status" class="message" role="status" aria-live="polite"></p>
+            <pre id="api-result" class="api-result" tabindex="0" aria-label="Kết quả API" hidden></pre>
+          </section>
+          <details id="financial-tester" class="financial-tester">
+            <summary>Thử Financial Fit — chỉ tính F</summary>
+            <p class="subtitle">Số điền sẵn là ví dụ Haaland giả lập, không phải dữ liệu thực tế. Kết quả không lưu vào lịch sử Matching.</p>
+            <p class="subtitle">F = 45% điểm phí + 35% điểm lương + 20% điểm hợp đồng.</p>
+            <form id="financial-form">
+              <label for="financial-budget">Ngân sách chuyển nhượng (euro)</label>
+              <input id="financial-budget" type="number" min="0.01" max="9999999999999.99" step="0.01" value="200000000" required>
+              <label for="financial-fee">Phí mua dự kiến (euro)</label>
+              <input id="financial-fee" type="number" min="0" max="9999999999999.99" step="0.01" value="180000000" placeholder="Để trống nếu chưa biết">
+              <label for="financial-salary-limit">Trần lương (euro/năm)</label>
+              <input id="financial-salary-limit" type="number" min="0.01" max="9999999999999.99" step="0.01" value="30000000" required>
+              <label for="financial-salary">Lương dự kiến (euro/năm)</label>
+              <input id="financial-salary" type="number" min="0" max="9999999999999.99" step="0.01" value="27000000" placeholder="Để trống nếu chưa biết">
+              <label for="financial-months">Hợp đồng còn lại với CLB cũ (tháng)</label>
+              <input id="financial-months" type="number" min="0" step="any" value="48" placeholder="Để trống nếu chưa biết">
+              <button id="financial-preview-button" class="secondary" type="submit">Tính F từ các số trên</button>
+            </form>
+            <div class="financial-database">
+              <h4>Hoặc dùng dữ liệu đã lưu</h4>
+              <p class="subtitle">Lấy phí/lương dự kiến và hợp đồng đang hiệu lực. Scout chỉ dùng yêu cầu CLB của mình.</p>
+              <label for="financial-player-id">ID cầu thủ</label>
+              <input id="financial-player-id" type="number" min="1" max="2147483647" step="1">
+              <label for="financial-requirement-id">ID yêu cầu CLB</label>
+              <input id="financial-requirement-id" type="number" min="1" max="2147483647" step="1">
+              <button id="financial-evaluate-button" class="secondary" type="button">Tính F từ dữ liệu đã lưu</button>
+            </div>
+            <p id="financial-status" class="message" role="status" aria-live="polite"></p>
+            <pre id="financial-result" class="api-result" tabindex="0" aria-label="Chi tiết phép tính Financial Fit" hidden></pre>
+          </details>
+          <details id="squad-tester" class="financial-tester">
+            <summary>Thử điểm S — phong độ từ thống kê</summary>
+            <p class="subtitle">Nhập ID cầu thủ để xem tên, chỉ số/90 phút và điểm phong độ theo vị trí chính. Ví dụ: Haaland 1700 · Mbappé 1263 · Van Dijk 369. Đây là ID cầu thủ, không phải ID thống kê.</p>
+            <form id="squad-form">
+              <label for="squad-player-id">ID cầu thủ</label>
+              <input id="squad-player-id" type="number" min="1" max="2147483647" step="1" value="1700" required>
+              <label for="squad-season">Mùa thống kê đã kết thúc</label>
+              <select id="squad-season"><option value="2025/2026">2025/2026</option></select>
+              <label for="squad-position">Vị trí CLB cần (để tính điểm khớp vị trí)</label>
+              <select id="squad-position">
+                <option value="">Dùng vị trí chính của cầu thủ</option>
+                <option>ST</option><option>LW</option><option>RW</option><option>CAM</option><option>CM</option><option>CDM</option><option>CB</option><option>RB</option><option>LB</option><option>GK</option>
+              </select>
+              <p class="subtitle">S gồm vị trí + tuổi + phong độ. Để trống ba ô dưới để xem riêng phong độ; muốn ghép thành S thì điền trọng số thử có tổng 100%. Không lưu cấu hình hoặc kết quả.</p>
+              <label for="squad-weight-position">Trọng số vị trí (%)</label>
+              <input id="squad-weight-position" type="number" min="0" max="100" step="any" placeholder="Chưa chốt">
+              <label for="squad-weight-age">Trọng số tuổi (%)</label>
+              <input id="squad-weight-age" type="number" min="0" max="100" step="any" placeholder="Chưa chốt">
+              <label for="squad-weight-form">Trọng số phong độ (%)</label>
+              <input id="squad-weight-form" type="number" min="0" max="100" step="any" placeholder="Chưa chốt">
+              <button id="squad-evaluate-button" class="secondary" type="submit">Tính từ thống kê đã lưu</button>
+            </form>
+            <p id="squad-status" class="message" role="status" aria-live="polite"></p>
+            <div id="squad-breakdown" hidden></div>
+            <details><summary>Chi tiết dữ liệu và phép tính</summary><pre id="squad-result" class="api-result" tabindex="0" aria-label="Chi tiết điểm S" hidden></pre></details>
+          </details>
+          <details id="risk-tester" class="financial-tester">
+            <summary>Thử điểm R — chấn thương và bán lại</summary>
+            <p class="subtitle">R càng cao càng thuận lợi. Xem riêng hai điểm thành phần trước, hoặc nhập hai trọng số thử có tổng 100% để ghép R. Không lưu kết quả hoặc thay cấu hình chính.</p>
+            <label for="risk-weight-injury">Trọng số chấn thương (%)</label>
+            <input id="risk-weight-injury" type="number" min="0" max="100" step="any" placeholder="Chưa chốt">
+            <label for="risk-weight-resale">Trọng số bán lại (%)</label>
+            <input id="risk-weight-resale" type="number" min="0" max="100" step="any" placeholder="Chưa chốt">
+            <h4>Bộ DEMO chấn thương — 10 cầu thủ</h4>
+            <p class="subtitle">Chỉ số chấn thương dưới đây hoàn toàn giả lập, không phản ánh lịch sử thật. Tên, tuổi và lịch sử giá lấy từ database. Kết quả luôn ghi DEMO; hồ sơ thật giữ nguyên.</p>
+            <form id="risk-demo-form">
+              <label for="risk-demo-player">Chọn cầu thủ để thử bộ DEMO</label>
+              <select id="risk-demo-player">
+                <option value="haaland">Erling Haaland — DEMO</option>
+                <option value="mbappe">Kylian Mbappé — DEMO</option>
+                <option value="salah">Mohamed Salah — DEMO</option>
+                <option value="van-dijk">Virgil van Dijk — DEMO</option>
+                <option value="saka">Bukayo Saka — DEMO</option>
+                <option value="bellingham">Jude Bellingham — DEMO</option>
+                <option value="vinicius">Vinicius Junior — DEMO</option>
+                <option value="rodri">Rodri — DEMO</option>
+                <option value="saliba">William Saliba — DEMO</option>
+                <option value="bruno-fernandes">Bruno Fernandes — DEMO</option>
+              </select>
+              <button id="risk-demo-button" class="secondary" type="submit">Tính R với chấn thương DEMO</button>
+            </form>
+            <h4>Dùng dữ liệu đã lưu</h4>
+            <p class="subtitle">Thiếu xác minh đầy đủ lịch sử chấn thương hai năm thì điểm chấn thương giữ null. Lấy hai mốc định giá cùng nguồn, hiện rõ ngày thực tế.</p>
+            <form id="risk-database-form">
+              <label for="risk-player-id">ID cầu thủ (Haaland: 1700)</label>
+              <input id="risk-player-id" type="number" min="1" max="2147483647" step="1" value="1700" required>
+              <label for="risk-source">Nguồn định giá (không bắt buộc)</label>
+              <input id="risk-source" type="text" maxlength="255" placeholder="Để trống nếu chỉ có một nguồn phù hợp">
+              <button id="risk-evaluate-button" class="secondary" type="submit">Tính R từ dữ liệu đã lưu</button>
+            </form>
+            <details>
+              <summary>Hoặc thử công thức bằng số giả lập</summary>
+              <p class="subtitle">Các số dưới chỉ để thử, không phải dữ liệu thật của Haaland hoặc cầu thủ nào. Không ghi vào database. Số ngày nghỉ đã gộp trùng trong hai năm; hai giá trị giả định cùng nguồn EUR, cách nhau 12 tháng.</p>
+              <form id="risk-simulation-form">
+                <label for="risk-age">Tuổi</label><input id="risk-age" type="number" min="15" max="100" step="1" value="23" placeholder="Trống nếu chưa biết">
+                <label for="risk-days">Tổng ngày nghỉ chấn thương trong hai năm</label><input id="risk-days" type="number" min="0" max="731" step="1" value="45" placeholder="Trống nếu chưa biết">
+                <label for="risk-ongoing">Đang chấn thương?</label><select id="risk-ongoing"><option value="false">Không</option><option value="true">Có</option></select>
+                <label for="risk-prior-value">Giá trị 12 tháng trước (EUR)</label><input id="risk-prior-value" type="number" min="0" max="9999999999999.99" step="0.01" value="20000000" placeholder="Trống nếu chưa biết">
+                <label for="risk-current-value">Giá trị hiện tại (EUR)</label><input id="risk-current-value" type="number" min="0" max="9999999999999.99" step="0.01" value="24000000" placeholder="Trống nếu chưa biết">
+                <button id="risk-simulate-button" class="secondary" type="submit">Thử R bằng số giả lập</button>
+              </form>
+            </details>
+            <p id="risk-status" class="message" role="status" aria-live="polite"></p>
+            <div id="risk-breakdown" hidden></div>
+            <details><summary>Chi tiết dữ liệu và phép tính</summary><pre id="risk-result" class="api-result" tabindex="0" aria-label="Chi tiết điểm R" hidden></pre></details>
+          </details>
+          <details id="matching-tester" class="financial-tester">
+            <summary>Thử Matching Engine — F, S, R</summary>
+            <p class="subtitle">Cần cấu hình Matching hợp lệ và dữ liệu đầu vào. Thiếu dữ liệu sẽ hiện phần còn thiếu, chưa lưu điểm tổng.</p>
+            <form id="matching-form">
+              <label for="matching-player-id">ID cầu thủ</label>
+              <input id="matching-player-id" type="number" min="1" max="2147483647" step="1" required>
+              <label for="matching-requirement-id">ID yêu cầu CLB</label>
+              <input id="matching-requirement-id" type="number" min="1" max="2147483647" step="1" required>
+              <label for="matching-season">Mùa đã kết thúc</label>
+              <input id="matching-season" type="text" placeholder="Ví dụ 2025/2026" required>
+              <label for="matching-form-role">Chấm phong độ theo vai trò nào?</label>
+              <select id="matching-form-role" required>
+                <option value="">Chọn vai trò để đánh giá</option>
+                <option value="PRIMARY">Vị trí chính của cầu thủ</option>
+                <option value="REQUIRED">Vị trí CLB cần bổ sung</option>
+              </select>
+              <label for="matching-config-id">ID cấu hình (không bắt buộc)</label>
+              <input id="matching-config-id" type="number" min="1" max="2147483647" step="1" placeholder="Để trống dùng cấu hình active">
+              <label for="matching-valuation-source">Nguồn định giá (không bắt buộc)</label>
+              <input id="matching-valuation-source" type="text" maxlength="255" placeholder="Chỉ cần chọn khi có nhiều nguồn">
+              <label class="matching-save"><input id="matching-save" type="checkbox"> Lưu lịch sử nếu tính đủ điểm</label>
+              <button id="matching-evaluate-button" class="secondary" type="submit">Tính Matching</button>
+            </form>
+            <p id="matching-status" class="message" role="status" aria-live="polite"></p>
+            <pre id="matching-result" class="api-result" tabindex="0" aria-label="Chi tiết điểm Matching" hidden></pre>
+          </details>
+          <button id="logout-button" class="primary" type="button">Đăng xuất</button>
+        </div>
+        <p id="message" class="message" role="status" aria-live="polite"></p>
+      </div>
+      <p class="footer">Football Transfer System</p>
+    </section>
+  </main>
+</body>
+</html>

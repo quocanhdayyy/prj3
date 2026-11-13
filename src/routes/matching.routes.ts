@@ -1,0 +1,20 @@
+import { Router } from "express";
+import { requireAuth } from "../middleware/auth.middleware";
+import { template, evaluate, rank, search } from "../controllers/matching.controller";
+import { financialEvaluate, financialPreview, squadPreview, riskDemo, riskDemoList, riskEvaluate, riskPreview } from "../controllers/preview.controller";
+import v3Routes from "./matching-v3.routes";
+
+const router = Router(); router.use(requireAuth);
+router.use("/v3", v3Routes);
+router.post("/financial/preview", financialPreview);
+router.post("/financial/evaluate", financialEvaluate);
+router.get("/template", template);
+router.post("/evaluate", evaluate);
+router.post("/rank", rank);
+router.post("/search", search);
+router.post("/squad/preview", squadPreview);
+router.post("/risk/evaluate", riskEvaluate);
+router.post("/risk/preview", riskPreview);
+router.get("/risk/demo", riskDemoList);
+router.post("/risk/demo", riskDemo);
+export default router;

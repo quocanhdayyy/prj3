@@ -1,0 +1,33 @@
+{
+  "pipeline": "STATS_ENRICHMENT_V1",
+  "season": "2025/2026",
+  "planSha256": "2fd1cdf481e7518231e53f9b2dc185de76973ade07205a80f3132f4fb7deb5d9",
+  "checkpointFile": "before-2fd1cdf481e7518231e53f9b2dc185de76973ade07205a80f3132f4fb7deb5d9.json",
+  "runAt": "2026-10-19T02:10:28.452Z",
+  "mode": "APPLY",
+  "candidatePlayers": 3374,
+  "rowsToUpdate": 299,
+  "rowsUpdated": 299,
+  "fieldsToFill": 1349,
+  "coverage": {
+    "complete": 2980,
+    "anyKnown": 3409,
+    "knownFields": {
+      "tacklesWon": 3214,
+      "interceptions": 3156,
+      "keyPasses": 3187,
+      "passesCompleted": 3332,
+      "passesAttempted": 3344
+    }
+  },
+  "byLeague": {
+    "IT1": 12,
+    "FR1": 17,
+    "ES1": 54,
+    "GB1": 31,
+    "L1": 25,
+    "NL1": 47,
+    "PO1": 28,
+    "TR1": 85
+  }
+}

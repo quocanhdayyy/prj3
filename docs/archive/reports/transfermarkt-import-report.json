@@ -1,0 +1,170 @@
+{
+  "provider": "https://github.com/dcaribou/transfermarkt-datasets",
+  "season": "2025/2026",
+  "asOf": "2026-10-19",
+  "importedAt": "2026-10-19T03:06:27.779Z",
+  "preparedSha256": "7e00971d5eab487e187789f2e99b64bd83ef7f158d702d253e15082b97542750",
+  "counts": {
+    "clubsCreated": 0,
+    "playersCreated": 0,
+    "statsCreated": 0,
+    "valuationsCreated": 0
+  },
+  "skipped": {
+    "clubsExisting": 96,
+    "playersExisting": 2684,
+    "statsExisting": 2684,
+    "valuationsExisting": 53352,
+    "manualProfiles": []
+  },
+  "available": {
+    "clubs": 96,
+    "playerProfiles": 2684,
+    "stats": 2684,
+    "valuations": 53352
+  },
+  "coverage": [
+    {
+      "competitionId": "GB1",
+      "league": "Premier League",
+      "games": 380,
+      "sourceParticipants": 537,
+      "preparedPlayers": 537,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "ES1",
+      "league": "La Liga",
+      "games": 380,
+      "sourceParticipants": 600,
+      "preparedPlayers": 600,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "L1",
+      "league": "Bundesliga",
+      "games": 306,
+      "sourceParticipants": 497,
+      "preparedPlayers": 497,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "IT1",
+      "league": "Serie A",
+      "games": 380,
+      "sourceParticipants": 585,
+      "preparedPlayers": 585,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "FR1",
+      "league": "Ligue 1",
+      "games": 306,
+      "sourceParticipants": 547,
+      "preparedPlayers": 547,
+      "profileCoveragePercent": 100
+    }
+  ],
+  "coverageBasis": "Players with positive minutes in the downloaded 2025/26 domestic-league appearances, NOT all registered squads or independently verified completeness.",
+  "skippedSourceProfiles": [],
+  "missingStatistics": [
+    "tacklesWon",
+    "interceptions",
+    "keyPasses",
+    "passesCompleted",
+    "passesAttempted"
+  ],
+  "notImported": {
+    "contracts": "Only reported expiration date is present; no start date/salary or current verification. Preserved as provenance, no invented Contract.",
+    "injuryHistories": "No injury table in this dataset; no inferred healthy status.",
+    "transfers": "Flat CSV lacks reliable transfer type (loan/permanent/free); do not guess types.",
+    "privateData": "No automatic matching inputs, requirements, verification, shortlist, notification, or matching score for real players."
+  },
+  "stars": [
+    {
+      "id": 369,
+      "transfermarktId": 139208,
+      "name": "Virgil van Dijk",
+      "position": "CB"
+    },
+    {
+      "id": 390,
+      "transfermarktId": 148455,
+      "name": "Mohamed Salah",
+      "position": "RW"
+    },
+    {
+      "id": 1263,
+      "transfermarktId": 342229,
+      "name": "Kylian Mbappé",
+      "position": "ST"
+    },
+    {
+      "id": 1447,
+      "transfermarktId": 371998,
+      "name": "Vinicius Junior",
+      "position": "LW"
+    },
+    {
+      "id": 1643,
+      "transfermarktId": 406635,
+      "name": "Phil Foden",
+      "position": "CAM"
+    },
+    {
+      "id": 1700,
+      "transfermarktId": 418560,
+      "name": "Erling Haaland",
+      "position": "ST"
+    },
+    {
+      "id": 1768,
+      "transfermarktId": 433177,
+      "name": "Bukayo Saka",
+      "position": "RW"
+    },
+    {
+      "id": 2440,
+      "transfermarktId": 581678,
+      "name": "Jude Bellingham",
+      "position": "CAM"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "table": "competitions",
+      "sha256": "8924ddfbc0e9989f4a42a3c32ebb6faa671614625086d7fa84353f955352ea88",
+      "url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/competitions.csv.gz"
+    },
+    {
+      "table": "clubs",
+      "sha256": "aa57ab56e87faffaea1e8697439a32caf10116d8f2f2dfb3a57193c0bb1d641b",
+      "url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/clubs.csv.gz"
+    },
+    {
+      "table": "players",
+      "sha256": "d22e407981d5b51a79bf8ff59835729f3526f7dc3495a6d8ed2f852ed2e86403",
+      "url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/players.csv.gz"
+    },
+    {
+      "table": "games",
+      "sha256": "142561989017d379bcf9e72bad0b87e0996bae0e7b710ebb3def9255f464c741",
+      "url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/games.csv.gz"
+    },
+    {
+      "table": "appearances",
+      "sha256": "e096c2b158fc3d52c4550526c4d4850dd62f31007652f4bcae112eadb1646802",
+      "url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/appearances.csv.gz"
+    },
+    {
+      "table": "player_valuations",
+      "sha256": "608e32e5ad2231074f3505c469ad727be66d7e6efda6af918afd85379439631d",
+      "url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/player_valuations.csv.gz"
+    },
+    {
+      "table": "transfers",
+      "sha256": "90326983daf7e6ac7aabdfe62b90936d9bf1dd2171e53dec75c3751eb1620a83",
+      "url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfers.csv.gz"
+    }
+  ]
+}

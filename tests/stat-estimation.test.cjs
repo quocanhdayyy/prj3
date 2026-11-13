@@ -1,0 +1,26 @@
+const assert=require('node:assert/strict');
+const {estimatePlayer,personalizePrediction}=require('../scripts/stat-estimation.cjs');
+const make=(id,position='CM',league='GB1')=>({id,position,leagues:[league],stats:{minutesPlayed:900,tacklesWon:20,interceptions:10,keyPasses:30,passesCompleted:400,passesAttempted:500}});
+const donors=Array.from({length:12},(_,i)=>make(i+1));
+const target=make(99);target.stats={...target.stats,minutesPlayed:450,tacklesWon:null,interceptions:null,keyPasses:null,passesCompleted:null,passesAttempted:null};
+const inferred=estimatePlayer(target,donors);
+assert.deepEqual(inferred.values,{tacklesWon:10,interceptions:5,keyPasses:15,passesAttempted:250,passesCompleted:200});
+assert.equal(target.stats.tacklesWon,null);assert.equal(inferred.fields.keyPasses.donorCount,12);
+const observed=make(99);assert.deepEqual(estimatePlayer(observed,donors).values,{});
+const partial={...target,stats:{...target.stats,passesCompleted:333}};
+assert.equal(estimatePlayer(partial,donors).values.passesAttempted,416);
+assert.equal(estimatePlayer(partial,donors).values.passesCompleted,undefined);
+assert.deepEqual(estimatePlayer({...target,position:'GK'},donors).values,{});
+assert.deepEqual(estimatePlayer({...target,stats:{...target.stats,minutesPlayed:0}},donors).values,{});
+assert.deepEqual(estimatePlayer(target,[...donors.slice(0,11),{...target,stats:make(99).stats}]).values,{}); // exclude self
+const fallback=estimatePlayer({...target,leagues:['FR1']},donors);assert.equal(fallback.fields.keyPasses.basis,'SAME_POSITION_TOP5');
+const own={sourceSeason:'2025/2026',minutes:900,values:{tacklesWon:4,interceptions:2,keyPasses:8,passesCompleted:600,passesAttempted:750}};
+const personal=personalizePrediction(target,inferred,[own]);
+assert.deepEqual(personal.values,{tacklesWon:2,interceptions:1,keyPasses:4,passesAttempted:375,passesCompleted:300});
+assert.equal(personal.fields.keyPasses.basis,'PERSONAL_CURRENT_SEASON_RESCALED');
+assert.deepEqual(personalizePrediction(observed,estimatePlayer(observed,donors),[own]).values,{});
+assert.deepEqual(personalizePrediction(target,inferred,[]),inferred);
+const historical=personalizePrediction(target,inferred,[{...own,sourceSeason:'2024/2025',minutes:1800}]);
+assert(historical.values.tacklesWon<inferred.values.tacklesWon);assert(historical.values.tacklesWon>1);
+assert.equal(historical.fields.tacklesWon.personalWeight,0.65);
+console.log('PASS: estimates use observed peers, preserve actual values, scale per90, respect passing constraints, exclude self and unsupported cohorts/zero minutes.');

@@ -1,0 +1,10 @@
+import { Router } from "express";
+import { requireAuth, requireAdmin } from "../middleware/auth.middleware";
+import * as controller from "../controllers/scoring-config.controller";
+const router = Router(); router.use(requireAuth);
+router.get("/active", controller.active);
+router.use(requireAdmin);
+router.get("/", controller.list); router.get("/:id", controller.detail);
+router.post("/", controller.create); router.patch("/:id", controller.update);
+router.post("/:id/activate", controller.activate); router.delete("/:id", controller.remove);
+export default router;

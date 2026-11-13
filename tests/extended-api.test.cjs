@@ -1,0 +1,97 @@
+const assert=require('node:assert/strict');
+const app=require('../src/app.ts').default;
+const {prisma}=require('../src/config/prisma.ts');
+const {createUser}=require('../src/services/user.service.ts');
+(async()=>{
+ const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+ const base=`http://127.0.0.1:${server.address().port}/api`;
+ const call=async(method,path,body,token)=>{const r=await fetch(base+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body===undefined||method==='GET'?{}:{body:JSON.stringify(body)})});return {status:r.status,body:r.status===204?null:await r.json()};};
+ const users=[],configs=[];let club,dest,player;const tag=Date.now();const pass='ExtendedTest123';
+ const originalActive=await prisma.scoringConfig.findFirst({where:{isActive:true}});
+ try{
+  for(const [n,role]of [[1,'ADMIN'],[2,'SCOUT'],[3,'SCOUT']])users.push(await createUser({username:`ext${n}_${tag}`,email:`ext${n}_${tag}@example.com`,password:pass,role}));
+  const tokens=[];for(const u of users){const r=await call('POST','/auth/login',{email:u.email,password:pass});assert.equal(r.status,200);tokens.push(r.body.data.accessToken);}
+  const [admin,a,b]=tokens;
+  club=await prisma.club.create({data:{name:'Extended A',country:'Vietnam',league:'Test',foundedYear:2000}});
+  dest=await prisma.club.create({data:{name:'Extended B',country:'Vietnam',league:'Test',foundedYear:2000}});
+  player=await prisma.player.create({data:{name:'Extended Player',dateOfBirth:new Date('2000-01-01'),nationality:'Vietnam',position:'CM',marketValue:1,height:180,preferredFoot:'RIGHT'}});
+  for(const path of ['/transfers','/shortlist-lists','/shortlist-items','/notifications','/scoring-configs','/match-results','/audit-logs'])assert.equal((await call('GET',path)).status,401);
+  assert.equal((await call('GET','/audit-logs',undefined,a)).status,403);
+  const tinput={playerId:player.id,fromClubId:club.id,toClubId:dest.id,transferDate:'2025-07-01',type:'PERMANENT',fee:'123.45',source:'Test source',reliability:'OFFICIAL'};
+  assert.equal((await call('POST','/transfers',tinput,a)).status,403);
+  assert.equal((await call('POST','/transfers',{...tinput,source:null},admin)).status,400);
+  assert.equal((await call('POST','/transfers',{...tinput,transferDate:'2025-02-30'},admin)).status,400);
+  const transfer=await call('POST','/transfers',tinput,admin);assert.equal(transfer.status,201);const tid=transfer.body.data.id;
+  assert.equal((await call('GET',`/transfers?playerId=${player.id}&pageSize=1`,undefined,a)).body.meta.total,1);
+  assert.equal((await call('PATCH',`/transfers/${tid}`,{type:'FREE'},admin)).status,400);
+  assert.equal((await call('PATCH',`/transfers/${tid}`,{fee:'200'},admin)).status,200);
+  const logs=await call('GET',`/audit-logs?entityType=Transfer&entityId=${tid}`,undefined,admin);assert.equal(logs.status,200);assert.equal(logs.body.meta.total,2);assert.equal(logs.body.data[0].newValue.fee,'200');
+  assert.equal((await call('PATCH',`/audit-logs/${logs.body.data[0].id}`,{},admin)).status,405);
+  const l=await call('POST','/shortlist-lists',{name:'Summer'},a);assert.equal(l.status,201);const lid=l.body.data.id;
+  assert.equal((await call('POST','/shortlist-lists',{name:'Other'},b)).status,201);
+  assert.equal((await call('GET',`/shortlist-lists/${lid}`,undefined,b)).status,404);
+  assert.equal((await call('PATCH',`/shortlist-lists/${lid}`,{name:'Stolen'},b)).status,404);
+  assert.equal((await call('GET',`/shortlist-lists/${lid}/items`,undefined,b)).status,404);
+  assert.equal((await call('POST','/shortlist-items',{playerId:player.id,shortlistId:lid},b)).status,404);
+  const item=await call('POST','/shortlist-items',{playerId:player.id,shortlistId:lid,priority:2},a);assert.equal(item.status,201);const iid=item.body.data.id;
+  assert.equal((await call('POST','/shortlist-items',{playerId:player.id,shortlistId:lid},a)).status,409);
+  assert.equal((await call('PATCH',`/shortlist-items/${iid}`,{priority:0},a)).status,400);
+  assert.equal((await call('GET',`/shortlist-lists/${lid}/items`,undefined,a)).body.meta.total,1);
+  assert.equal((await call('DELETE',`/shortlist-lists/${lid}`,undefined,a)).status,409);
+  assert.equal((await call('PATCH',`/shortlist-lists/${lid}`,{name:'Summer updated'},a)).status,200);
+  assert.equal((await call('DELETE',`/shortlists/${iid}`,undefined,a)).status,204);
+  assert.equal((await call('DELETE',`/shortlist-lists/${lid}`,undefined,a)).status,204);
+  const ni={userId:users[1].id,playerId:player.id,type:'INJURY_RECORDED',title:'Test',content:'Test content',eventKey:`test-${tag}`};
+  assert.equal((await call('POST','/notifications',ni,a)).status,403);
+  const n=await call('POST','/notifications',ni,admin);assert.equal(n.status,201);const nid=n.body.data.id;
+  assert.equal((await call('POST','/notifications',ni,admin)).status,409);
+  assert.equal((await call('GET',`/notifications/${nid}`,undefined,b)).status,404);
+  assert.equal((await call('PATCH',`/notifications/${nid}`,{isRead:true},b)).status,404);
+  assert.equal((await call('GET','/notifications?unread=true',undefined,a)).body.meta.total,1);
+  assert.equal((await call('PATCH',`/notifications/${nid}`,{isRead:true},a)).status,200);
+  assert.equal((await call('GET','/notifications?unread=true',undefined,a)).body.meta.total,0);
+  assert.equal((await call('PATCH',`/notifications/${nid}`,{content:'tampered'},a)).status,400);
+  assert.equal((await call('DELETE',`/notifications/${nid}`,undefined,a)).status,204);
+  const config={name:`Test-${tag}`,version:1,financialWeight:0.4,squadWeight:0.4,riskWeight:0.2,criteriaWeights:{financial:{fee:0.45,salary:0.35,contract:0.2},squad:{position:0.5,age:0.3,minutes:0.2},risk:{injury:0.6,resale:0.4}},parameters:{test:true}};
+  assert.equal((await call('POST','/scoring-configs',config,a)).status,403);
+  assert.equal((await call('POST','/scoring-configs',{...config,riskWeight:0.3},admin)).status,400);
+  assert.equal((await call('POST','/scoring-configs',{...config,criteriaWeights:{financial:{fee:0.5}}},admin)).status,400);
+  const c=await call('POST','/scoring-configs',config,admin);assert.equal(c.status,201);const cid=c.body.data.id;configs.push(cid);
+  assert.equal((await call('POST','/scoring-configs',config,admin)).status,409);
+  const c2=await call('POST','/scoring-configs',{...config,version:2},admin);assert.equal(c2.status,201);configs.push(c2.body.data.id);
+  assert.equal((await call('PATCH',`/scoring-configs/${cid}`,{financialWeight:0.6},admin)).status,400);
+  assert.equal((await call('POST',`/scoring-configs/${cid}/activate`,undefined,admin)).status,200);
+  assert.equal((await call('GET','/scoring-configs/active',undefined,a)).body.data.id,cid);
+  assert.equal((await call('DELETE',`/scoring-configs/${cid}`,undefined,admin)).status,409);
+  const requirement=await prisma.clubRequirement.create({data:{clubId:club.id,userId:users[1].id,minAge:18,maxAge:25,salaryLimit:1000,position:'CM',priority:1,budget:10000}});
+  const result=await prisma.matchResult.create({data:{userId:users[1].id,playerId:player.id,requirementId:requirement.id,configId:cid,totalScore:80,financialScore:80,squadScore:80,riskScore:80,criteriaScores:{},prosCons:{pros:[],cons:[]},inputSnapshot:{test:true}}});
+  assert.equal((await call('PATCH',`/scoring-configs/${cid}`,{parameters:{changed:true}},admin)).status,409);
+  assert.equal((await call('POST',`/scoring-configs/${c2.body.data.id}/activate`,undefined,admin)).status,200);
+  assert.equal((await prisma.scoringConfig.findMany({where:{isActive:true}})).length,1);
+  assert.equal((await call('DELETE',`/scoring-configs/${cid}`,undefined,admin)).status,409);
+  assert.equal((await call('GET','/match-results',undefined,b)).body.meta.total,0);
+  assert.equal((await call('GET',`/match-results/${result.id}`,undefined,b)).status,404);
+  assert.equal((await call('DELETE',`/match-results/${result.id}`,undefined,b)).status,404);
+  assert.equal((await call('GET',`/match-results/${result.id}`,undefined,a)).status,200);
+  assert.equal((await call('POST','/match-results',{totalScore:100},a)).status,405);
+  assert.equal((await call('PATCH',`/match-results/${result.id}`,{totalScore:100},a)).status,405);
+  assert.equal((await call('DELETE',`/match-results/${result.id}`,undefined,a)).status,204);
+  assert.equal((await call('GET','/transfers?pageSize=101',undefined,a)).status,400);
+  assert.equal((await call('GET','/audit-logs?from=2025-02-01&to=2025-01-01',undefined,admin)).status,400);
+  const malformed=await fetch(base+'/transfers',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+admin},body:'{"playerId": ID}'});assert.equal(malformed.status,400);assert.equal((await malformed.json()).status,'error');
+  assert.equal((await call('DELETE',`/transfers/${tid}`,undefined,admin)).status,204);
+  console.log('PASS: Extended APIs, CRUD, ownership, RBAC, validation, pagination, immutable audit/result routes, config activation/version protection, and legacy Shortlist compatibility.');
+ }finally{
+  const ids=users.map(u=>u.id);
+  if(ids.length){
+   await prisma.matchResult.deleteMany({where:{userId:{in:ids}}});await prisma.notification.deleteMany({where:{userId:{in:ids}}});
+   await prisma.auditLog.deleteMany({where:{actorId:{in:ids}}});await prisma.shortlistItem.deleteMany({where:{userId:{in:ids}}});await prisma.shortlist.deleteMany({where:{userId:{in:ids}}});await prisma.clubRequirement.deleteMany({where:{userId:{in:ids}}});
+  }
+  if(configs.length)await prisma.scoringConfig.deleteMany({where:{id:{in:configs}}});
+  if(originalActive)await prisma.scoringConfig.update({where:{id:originalActive.id},data:{isActive:true}});
+  if(player){await prisma.transfer.deleteMany({where:{playerId:player.id}});await prisma.player.delete({where:{id:player.id}});}
+  if(club)await prisma.club.delete({where:{id:club.id}});if(dest)await prisma.club.delete({where:{id:dest.id}});
+  if(ids.length)await prisma.user.deleteMany({where:{id:{in:ids}}});
+  await new Promise(r=>server.close(r));await prisma.$disconnect();
+ }
+})().catch(e=>{console.error(e);process.exitCode=1;});

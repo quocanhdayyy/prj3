@@ -1,0 +1,100 @@
+{
+  "synthetic": true,
+  "source": "DEMO - synthetic football data",
+  "evaluatedOn": "2026-10-15",
+  "owner": {
+    "id": 15,
+    "username": "quocanh123",
+    "role": "ADMIN"
+  },
+  "ids": {
+    "ownerId": 15,
+    "statsId": 14,
+    "configId": 39,
+    "injuryId": 3,
+    "playerId": 93,
+    "transferId": 12,
+    "buyerClubId": 106,
+    "contractIds": [
+      14,
+      15
+    ],
+    "demoVersion": 1,
+    "shortlistId": 28,
+    "formerClubId": 104,
+    "currentClubId": 105,
+    "requirementId": 87,
+    "notificationId": 15,
+    "matchingInputId": 34,
+    "shortlistItemId": 38
+  },
+  "provisionalWeights": {
+    "squad": {
+      "position": 0.2,
+      "age": 0.2,
+      "form": 0.6
+    },
+    "risk": {
+      "injury": 0.6,
+      "resale": 0.4
+    }
+  },
+  "configActivated": false,
+  "request": {
+    "playerId": 93,
+    "requirementId": 87,
+    "configId": 39,
+    "season": "2025/2026",
+    "formRole": "PRIMARY",
+    "valuationSource": "DEMO - synthetic football data",
+    "save": false
+  },
+  "scores": {
+    "F": 82.6,
+    "S": 90.4,
+    "R": 96.8,
+    "total": 88.56
+  },
+  "resultId": 14,
+  "complete": true,
+  "missing": [],
+  "evidence": {
+    "verification": {
+      "playerId": 93,
+      "injuryCoveredFrom": "2024-10-15T00:00:00.000Z",
+      "injuryCoveredThrough": "2026-10-15T00:00:00.000Z",
+      "injuryVerifiedAt": "2026-10-15T16:21:21.869Z",
+      "injuryVerifiedById": 15,
+      "injurySource": "DEMO - synthetic football data",
+      "registrationStatus": "CONTRACTED",
+      "registrationAsOf": "2026-10-15T00:00:00.000Z",
+      "registrationVerifiedAt": "2026-10-15T16:21:21.869Z",
+      "registrationVerifiedById": 15,
+      "registrationSource": "DEMO - synthetic football data"
+    },
+    "valuations": [
+      {
+        "id": 32,
+        "playerId": 93,
+        "valuedAt": "2025-10-15T00:00:00.000Z",
+        "marketValue": "40000000",
+        "source": "DEMO - synthetic football data",
+        "reliability": "UNKNOWN",
+        "recordedAt": "2026-10-15T16:20:51.447Z"
+      },
+      {
+        "id": 33,
+        "playerId": 93,
+        "valuedAt": "2026-10-15T00:00:00.000Z",
+        "marketValue": "50000000",
+        "source": "DEMO - synthetic football data",
+        "reliability": "UNKNOWN",
+        "recordedAt": "2026-10-15T16:20:51.448Z"
+      }
+    ]
+  },
+  "session": "Use the existing admin login; no credentials or auth sessions were generated.",
+  "removed": true,
+  "removedOn": "2026-10-21",
+  "notice": "Historical manifest: the referenced demo player, clubs and dependent data were explicitly removed. IDs are no longer valid; seed again only if demo data is wanted."
+}

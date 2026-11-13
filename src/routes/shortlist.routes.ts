@@ -1,0 +1,11 @@
+import { requireAuth } from "../middleware/auth.middleware";
+import { Router } from "express";
+import { listShortlists, getShortlistDetail, addShortlist, editShortlist, removeShortlist } from "../controllers/shortlist.controller";
+const router=Router();
+router.use(requireAuth);
+router.get("/",listShortlists);
+router.get("/:id",getShortlistDetail);
+router.post("/",addShortlist);
+router.patch("/:id",editShortlist);
+router.delete("/:id",removeShortlist);
+export default router;

@@ -1,0 +1,71 @@
+{
+  "pipeline": "SCOPE_TOP5_V1",
+  "mode": "APPLY",
+  "season": "2025/2026",
+  "runAt": "2026-10-19T03:05:04.765Z",
+  "leagues": [
+    {
+      "competitionId": "GB1",
+      "league": "Premier League",
+      "games": 380,
+      "sourceParticipants": 537,
+      "preparedPlayers": 537,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "ES1",
+      "league": "La Liga",
+      "games": 380,
+      "sourceParticipants": 600,
+      "preparedPlayers": 600,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "L1",
+      "league": "Bundesliga",
+      "games": 306,
+      "sourceParticipants": 497,
+      "preparedPlayers": 497,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "IT1",
+      "league": "Serie A",
+      "games": 380,
+      "sourceParticipants": 585,
+      "preparedPlayers": 585,
+      "profileCoveragePercent": 100
+    },
+    {
+      "competitionId": "FR1",
+      "league": "Ligue 1",
+      "games": 306,
+      "sourceParticipants": 547,
+      "preparedPlayers": 547,
+      "profileCoveragePercent": 100
+    }
+  ],
+  "removed": {
+    "players": 1593,
+    "clubs": 54,
+    "stats": 1593,
+    "valuations": 27682
+  },
+  "reaggregatedStats": 51,
+  "retained": {
+    "importedPlayers": 2684,
+    "importedClubs": 96,
+    "valuations": 53352
+  },
+  "detailedStats": {
+    "complete": 2148,
+    "partial": 118,
+    "missing": 418
+  },
+  "backup": {
+    "file": "before-2026-10-19T03-05-01-354Z.dump",
+    "sha256": "7d3e6fbdd450a7b9b859e388dcb5c3a9328cc7533bfd510427017ace446c74be",
+    "bytes": 2122656
+  },
+  "checkpointFile": "checkpoint-2026-10-19T03-05-01-354Z.json"
+}

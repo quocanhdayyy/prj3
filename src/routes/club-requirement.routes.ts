@@ -1,0 +1,11 @@
+import { requireAuth } from "../middleware/auth.middleware";
+import { Router } from "express";
+import { listRequirements, getRequirementDetail, addRequirement, editRequirement, removeRequirement } from "../controllers/club-requirement.controller";
+const router=Router();
+router.use(requireAuth);
+router.get("/",listRequirements);
+router.get("/:id",getRequirementDetail);
+router.post("/",addRequirement);
+router.patch("/:id",editRequirement);
+router.delete("/:id",removeRequirement);
+export default router;

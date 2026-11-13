@@ -1,0 +1,130 @@
+{
+  "provider": "https://github.com/m-mahadi/top5-football-dataset",
+  "commit": "8940299c2c56c2c0932d3caf292336f5e1689893",
+  "sourceSha256": "acf7b7aa303c8de040de30ad2f367ea7c30b61e75d6d10dac2611f36963bbcc6",
+  "season": "2025/2026",
+  "preparedSha256": "ad2f1da0d7c5b8506ab358ff99600cc9ebd20bd9821433574286b5ae977e9259",
+  "mode": "APPLY",
+  "runAt": "2026-10-16T08:47:45.861Z",
+  "sourcePreparation": {
+    "selectedSourceRows": 2691,
+    "ambiguous_or_missing_full_name": 149,
+    "minutes_differ_beyond_tolerance": 672,
+    "appearances_or_goals_differ": 125,
+    "unconfirmed_club": 1,
+    "acceptedRows": 1744,
+    "rowsWithMinorMinuteDifference": 810
+  },
+  "rowsToUpdate": 1744,
+  "rowsUpdated": 1744,
+  "fieldsUpdated": 8720,
+  "skippedCounts": {},
+  "byLeague": {
+    "ENG-Premier League": 316,
+    "ESP-La Liga": 407,
+    "ITA-Serie A": 393,
+    "GER-Bundesliga": 298,
+    "FRA-Ligue 1": 330
+  },
+  "minutesPolicy": "Keep Transfermarkt minutes; exact appearances/goals, absolute difference <= appearances AND <= floor(1% of minutes). No rescaling.",
+  "stars": [
+    {
+      "playerId": 1700,
+      "name": "Erling Haaland",
+      "transfermarktId": 418560,
+      "statsId": 1621,
+      "fields": [
+        "tacklesWon",
+        "interceptions",
+        "keyPasses",
+        "passesCompleted",
+        "passesAttempted"
+      ],
+      "sourcePlayerId": 839956
+    },
+    {
+      "playerId": 369,
+      "name": "Virgil van Dijk",
+      "transfermarktId": 139208,
+      "statsId": 290,
+      "fields": [
+        "tacklesWon",
+        "interceptions",
+        "keyPasses",
+        "passesCompleted",
+        "passesAttempted"
+      ],
+      "sourcePlayerId": 151545
+    },
+    {
+      "playerId": 1768,
+      "name": "Bukayo Saka",
+      "transfermarktId": 433177,
+      "statsId": 1689,
+      "fields": [
+        "tacklesWon",
+        "interceptions",
+        "keyPasses",
+        "passesCompleted",
+        "passesAttempted"
+      ],
+      "sourcePlayerId": 934235
+    },
+    {
+      "playerId": 390,
+      "name": "Mohamed Salah",
+      "transfermarktId": 148455,
+      "statsId": 311,
+      "fields": [
+        "tacklesWon",
+        "interceptions",
+        "keyPasses",
+        "passesCompleted",
+        "passesAttempted"
+      ],
+      "sourcePlayerId": 159665
+    },
+    {
+      "playerId": 1263,
+      "name": "Kylian Mbappé",
+      "transfermarktId": 342229,
+      "statsId": 1184,
+      "fields": [
+        "tacklesWon",
+        "interceptions",
+        "keyPasses",
+        "passesCompleted",
+        "passesAttempted"
+      ],
+      "sourcePlayerId": 826643
+    },
+    {
+      "playerId": 1447,
+      "name": "Vinicius Junior",
+      "transfermarktId": 371998,
+      "statsId": 1368,
+      "fields": [
+        "tacklesWon",
+        "interceptions",
+        "keyPasses",
+        "passesCompleted",
+        "passesAttempted"
+      ],
+      "sourcePlayerId": 868812
+    },
+    {
+      "playerId": 2440,
+      "name": "Jude Bellingham",
+      "transfermarktId": 581678,
+      "statsId": 2361,
+      "fields": [
+        "tacklesWon",
+        "interceptions",
+        "keyPasses",
+        "passesCompleted",
+        "passesAttempted"
+      ],
+      "sourcePlayerId": 991011
+    }
+  ]
+}
